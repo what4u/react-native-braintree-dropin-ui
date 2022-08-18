@@ -2,6 +2,8 @@ package tech.power.RNBraintreeDropIn;
 
 import android.app.Activity;
 import android.content.Intent;
+
+import com.braintreepayments.api.models.PayPalRequest;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
@@ -91,6 +93,9 @@ public class RNBraintreeDropInModule extends ReactContextBaseJavaModule {
     
     if(!options.getBoolean("payPal")){ //disable paypal
       dropInRequest.disablePayPal();
+    } else {
+      PayPalRequest payPalRequest = new PayPalRequest(String.valueOf(options.getInt("amount")));
+      dropInRequest.paypalRequest(payPalRequest);
     }
 
     mPromise = promise;
