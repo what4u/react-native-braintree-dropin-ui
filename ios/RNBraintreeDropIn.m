@@ -1,6 +1,7 @@
 #import "RNBraintreeDropIn.h"
 #import <React/RCTUtils.h>
 #import "BTThreeDSecureRequest.h"
+#import "BTPayPalCheckoutRequest.h"
 
 @implementation RNBraintreeDropIn
 
@@ -105,6 +106,9 @@ RCT_EXPORT_METHOD(show:(NSDictionary*)options resolver:(RCTPromiseResolveBlock)r
     
     if(![options[@"payPal"] boolValue]){ //disable paypal
         request.paypalDisabled = YES;
+    } else {
+        BTPayPalRequest *paypalRequest = [[BTPayPalCheckoutRequest alloc] initWithAmount:options[@"amount"]];
+        request.payPalRequest = paypalRequest;
     }
 
     BTDropInController *dropIn = [[BTDropInController alloc] initWithAuthorization:clientToken request:request handler:^(BTDropInController * _Nonnull controller, BTDropInResult * _Nullable result, NSError * _Nullable error) {
