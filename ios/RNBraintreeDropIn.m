@@ -12,23 +12,28 @@ RCT_EXPORT_MODULE(RNBraintreeDropIn)
 
 RCT_EXPORT_METHOD(show:(NSDictionary*)options resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
 {
+    BTDropInRequest *request = [[BTDropInRequest alloc] init];
 
+    BTDropInColorScheme colorScheme = BTDropInColorSchemeLight;
+    
     if([options[@"darkTheme"] boolValue]){
         if (@available(iOS 13.0, *)) {
-            BTUIKAppearance.sharedInstance.colorScheme = BTUIKColorSchemeDynamic;
+            colorScheme = BTDropInColorSchemeDynamic;
         } else {
-            BTUIKAppearance.sharedInstance.colorScheme = BTUIKColorSchemeDark;
+            colorScheme = BTDropInColorSchemeDark;
         }
-    } else {
-        BTUIKAppearance.sharedInstance.colorScheme = BTUIKColorSchemeLight;
     }
-
+                
+    BTDropInUICustomization *uiCustomization = [[BTDropInUICustomization alloc] initWithColorScheme:colorScheme];
+                                
     if(options[@"fontFamily"]){
-        [BTUIKAppearance sharedInstance].fontFamily = options[@"fontFamily"];
+        uiCustomization.fontFamily = options[@"fontFamily"];
     }
     if(options[@"boldFontFamily"]){
-        [BTUIKAppearance sharedInstance].boldFontFamily = options[@"boldFontFamily"];
+        uiCustomization.boldFontFamily = options[@"boldFontFamily"];
     }
+    
+    request.uiCustomization = uiCustomization;
 
     self.resolve = resolve;
     self.reject = reject;
@@ -40,8 +45,6 @@ RCT_EXPORT_METHOD(show:(NSDictionary*)options resolver:(RCTPromiseResolveBlock)r
         return;
     }
 
-    BTDropInRequest *request = [[BTDropInRequest alloc] init];
-
     NSDictionary* threeDSecureOptions = options[@"threeDSecure"];
     if (threeDSecureOptions) {
         NSNumber* threeDSecureAmount = threeDSecureOptions[@"amount"];
@@ -50,7 +53,6 @@ RCT_EXPORT_METHOD(show:(NSDictionary*)options resolver:(RCTPromiseResolveBlock)r
             return;
         }
 
-        request.threeDSecureVerification = YES;
         BTThreeDSecureRequest *threeDSecureRequest = [[BTThreeDSecureRequest alloc] init];
         threeDSecureRequest.amount = [NSDecimalNumber decimalNumberWithString:threeDSecureAmount.stringValue];
         request.threeDSecureRequest = threeDSecureRequest;
@@ -59,7 +61,7 @@ RCT_EXPORT_METHOD(show:(NSDictionary*)options resolver:(RCTPromiseResolveBlock)r
 
     BTAPIClient *apiClient = [[BTAPIClient alloc] initWithAuthorization:clientToken];
     self.dataCollector = [[BTDataCollector alloc] initWithAPIClient:apiClient];
-    [self.dataCollector collectCardFraudData:^(NSString * _Nonnull deviceDataCollector) {
+    [self.dataCollector collectDeviceData:^(NSString * _Nonnull deviceDataCollector) {
         // Save deviceData
         self.deviceDataCollector = deviceDataCollector;
     }];
@@ -113,7 +115,7 @@ RCT_EXPORT_METHOD(show:(NSDictionary*)options resolver:(RCTPromiseResolveBlock)r
 
             if (error != nil) {
                 reject(error.localizedDescription, error.localizedDescription, error);
-            } else if (result.cancelled) {
+            } else if (result.canceled) {
                 reject(@"USER_CANCELLATION", @"The user cancelled", nil);
             } else {
                 if (threeDSecureOptions && [result.paymentMethod isKindOfClass:[BTCardNonce class]]) {
@@ -125,7 +127,7 @@ RCT_EXPORT_METHOD(show:(NSDictionary*)options resolver:(RCTPromiseResolveBlock)r
                     } else{
                         [[self class] resolvePayment:result deviceData:self.deviceDataCollector resolver:resolve];
                     }
-                } else if(result.paymentMethod == nil && (result.paymentOptionType == 16 || result.paymentOptionType == 18)){ //Apple Pay
+                } else if(result.paymentMethod == nil && (result.paymentMethodType == BTDropInPaymentMethodTypeApplePay)){ //Apple Pay
                     // UIViewController *ctrl = [[[[UIApplication sharedApplication] delegate] window] rootViewController];
                     // [ctrl presentViewController:self.viewController animated:YES completion:nil];
                     UIViewController *rootViewController = RCTPresentedViewController();
