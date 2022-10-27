@@ -92,7 +92,7 @@ RCT_EXPORT_METHOD(show:(NSDictionary*)options resolver:(RCTPromiseResolveBlock)r
         self.paymentRequest.merchantCapabilities = PKMerchantCapability3DS;
         self.paymentRequest.countryCode = countryCode;
         self.paymentRequest.currencyCode = currencyCode;
-        self.paymentRequest.supportedNetworks = @[PKPaymentNetworkAmex, PKPaymentNetworkVisa, PKPaymentNetworkMasterCard, PKPaymentNetworkDiscover, PKPaymentNetworkChinaUnionPay];
+        self.paymentRequest.supportedNetworks = @[PKPaymentNetworkVisa, PKPaymentNetworkMasterCard];
         self.paymentRequest.paymentSummaryItems =
             @[
                 [PKPaymentSummaryItem summaryItemWithLabel:merchantName amount:orderTotal]
