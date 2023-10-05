@@ -243,7 +243,7 @@ RCT_EXPORT_METHOD(tokenizeCard:(NSString*)clientToken
 }
 
 + (void)resolvePayment:(BTDropInResult* _Nullable)result deviceData:(NSString * _Nonnull)deviceDataCollector resolver:(RCTPromiseResolveBlock _Nonnull)resolve {
-    //NSLog(@"result = %@", result);
+    NSLog(@"result = %@", result);
 
     if (!result) {
         resolve(nil);
@@ -260,6 +260,19 @@ RCT_EXPORT_METHOD(tokenizeCard:(NSString*)clientToken
     [jsResult setObject:result.paymentDescription forKey:@"description"];
     [jsResult setObject:[NSNumber numberWithBool:result.paymentMethod.isDefault] forKey:@"isDefault"];
     [jsResult setObject:deviceDataCollector forKey:@"deviceData"];
+
+    // More Info
+    if ([result.paymentMethod isKindOfClass:[BTCardNonce class]]) {
+        [jsResult setObject:((BTCardNonce*)result.paymentMethod).bin forKey:@"bin"];
+        [jsResult setObject:((BTCardNonce*)result.paymentMethod).lastFour forKey:@"lastFour"];
+        // for credit card, type is the credit card type
+        [jsResult setObject:result.paymentMethod.type forKey:@"cardType"];
+        [jsResult setObject:@"CreditCard" forKey:@"type"];
+    } else if ([result.paymentMethod isKindOfClass:[BTPayPalAccountNonce class]]) {
+        [jsResult setObject:((BTPayPalAccountNonce*)result.paymentMethod).email forKey:@"email"];
+        // for paypal, type is paypalAccount
+        [jsResult setObject:@"PayPalAccount" forKey:@"type"];
+    }
 
     resolve(jsResult);
 }

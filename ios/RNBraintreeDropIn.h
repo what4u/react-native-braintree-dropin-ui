@@ -10,6 +10,7 @@
 #import "BraintreeCore.h"
 #import "BraintreeDropIn.h"
 #import "BTCardNonce.h"
+#import "BTPayPalAccountNonce.h"
 #import "BTDataCollector.h"
 
 #import "BraintreeApplePay.h"

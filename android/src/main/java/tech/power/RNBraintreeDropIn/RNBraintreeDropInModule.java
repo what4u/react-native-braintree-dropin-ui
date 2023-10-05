@@ -11,6 +11,7 @@ import com.braintreepayments.api.CardClient;
 import com.braintreepayments.api.DropInClient;
 import com.braintreepayments.api.DropInListener;
 import com.braintreepayments.api.DropInPaymentMethod;
+import com.braintreepayments.api.PayPalAccountNonce;
 import com.braintreepayments.api.ThreeDSecureRequest;
 import com.braintreepayments.api.UserCanceledException;
 import com.facebook.react.bridge.ReactApplicationContext;
@@ -253,6 +254,19 @@ public class RNBraintreeDropInModule extends ReactContextBaseJavaModule {
     jsResult.putString("description", dropInResult.getPaymentDescription());
     jsResult.putBoolean("isDefault", paymentMethodNonce.isDefault());
     jsResult.putString("deviceData", deviceData);
+
+    // More Info
+    if (paymentMethodNonce instanceof CardNonce) {
+      jsResult.putString("bin", ((CardNonce) paymentMethodNonce).getBin());
+      jsResult.putString("lastFour", ((CardNonce) paymentMethodNonce).getLastFour());
+      jsResult.putString("cardType", ((CardNonce) paymentMethodNonce).getCardType());
+      // override type
+      jsResult.putString("type", "CreditCard");
+    } else if (paymentMethodNonce instanceof PayPalAccountNonce) {
+      jsResult.putString("email", ((PayPalAccountNonce) paymentMethodNonce).getEmail());
+      // override type
+      jsResult.putString("type", "PayPalAccount");
+    }
 
     promise.resolve(jsResult);
   }
